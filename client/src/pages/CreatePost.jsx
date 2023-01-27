@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Form, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { preview } from '../assets';
-import { getRandomPromt } from '../utils'
+import { getRandomPrompt } from '../utils'
 import { FormField, Loader } from '../components';
 
 
@@ -17,20 +17,63 @@ const CreatePost = () => {
   const [loading, setLoading] = useState(false);
 
 
-  const generateImage = () => {
-    
+  const generateImage = async () => {
+    if (form.prompt) {
+      try {
+        setGeneratingImg(true);
+        const response = await fetch('http://localhost:8080/api/v1/dalle', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: form.prompt }),
+        })
+        const data = await response.json();
+        setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` })
+
+      } catch (error) {
+        alert(error);
+      } finally {
+        setGeneratingImg(false)
+      }
+    } else {
+      alert('Please enter a prompt')
+    }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    if (form.prompt && form.photo) {
+      setLoading(true);
+
+      try {
+        const response = await fetch('http://localhost:8080/api/v1/post', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({...form}),
+        })
+        await response.json();
+        alert('Success');
+        navigate('/');
+      } catch (error) {
+        alert(error)
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      alert('Please enter a prompt and generate an image')
+    }
   }
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value  })
+    setForm({ ...form, [e.target.name]: e.target.value })
   }
 
   const handleSurpriseMe = () => {
-    const randomPrompt = getRandomPromt(form.prompt)
+    const randomPrompt = getRandomPrompt(form.prompt)
     setForm({ ...form, prompt: randomPrompt })
   }
 
@@ -71,7 +114,7 @@ const CreatePost = () => {
            focus:border-blue-500 w-64 p-3 h-64 justify-center items-center'>
             {form.photo ? (
               <img
-                src={photo}
+                src={form.photo}
                 alt={form.prompt}
                 className='w-full h-full object-contain'
               />
@@ -112,8 +155,8 @@ const CreatePost = () => {
             Once you have created the image you want, you can share it with others in the community
           </p>
           <button
-          type='submit'
-          className='mt-3 text-white bg-[#6469ff]
+            type='submit'
+            className='mt-3 text-white bg-[#6469ff]
           font-medium rounded-md text-sm w-full sm:w-auto
           px-5 py-2.5 text-center'
           >
