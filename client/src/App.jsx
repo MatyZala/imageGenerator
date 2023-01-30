@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 
-import { logo } from './assets'
+import logoweb from './assets/MiZtbg.png'
 import { Home, CreatePost } from './pages'
 
 const App = () => {
@@ -11,8 +11,8 @@ const App = () => {
     justify-between items-center bg-[#b8b8fc]
     sm:px-8 px-4 py-4 border-b border-b-[#e6ebf4]'>
         <Link to='/'>
-          <img src={logo} alt='logo'
-            className='w-28 object-contain' />
+          <img src={logoweb} alt='logo'
+            className='w-40 object-contain' />
         </Link>
 
         <Link to='/create-post'
